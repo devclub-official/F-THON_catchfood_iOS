@@ -16,6 +16,7 @@ class RecommendedStoreCellViewModel {
     func votingFoot(store : RecommendedStore, ongoing : Int)
     {
         guard let partyId = NicknameStorageService.shared.getPartyId() else {return}
+        
         let headers : HTTPHeaders = [
             "X-User-Name" : NicknameStorageService.shared.getNickname()!
         ]
