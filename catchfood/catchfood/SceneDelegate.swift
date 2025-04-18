@@ -16,7 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         window = UIWindow(windowScene: windowScene)
-        let viewController = RestaurantDetailViewController(restaurantId: 1)
+        let viewController = UINavigationController(rootViewController: SearchViewController())
         window?.rootViewController = viewController
         window?.makeKeyAndVisible()
     }
