@@ -20,6 +20,14 @@ class GroupGenerateViewController: UIViewController {
         return view
     }()
     
+    private var dismissButton : UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "xmark"), for: .normal)
+        button.imageView?.tintColor = .black
+        return button
+    }()
+    
     private var titleLabel : UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -50,7 +58,7 @@ class GroupGenerateViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setViewLayout()
-        
+        bind()
     }
     
     func setViewLayout()
@@ -65,6 +73,14 @@ class GroupGenerateViewController: UIViewController {
             make.left.equalTo(20)
             make.top.equalTo(view.safeAreaLayoutGuide).offset(10)
             make.right.equalTo(-20)
+        }
+        
+        containerView.addSubview(dismissButton)
+        dismissButton.snp.makeConstraints { make in
+            make.right.equalTo(-20)
+            make.centerY.equalTo(titleLabel.snp.centerY)
+            make.width.equalTo(24)
+            make.height.equalTo(24)
         }
         
         containerView.addSubview(groupNameTextField)
@@ -85,18 +101,34 @@ class GroupGenerateViewController: UIViewController {
     
     func bind()
     {
+        
+        viewModel.groupGenerateResult
+            .subscribe { [weak self] isSuccess in
+                if isSuccess
+                {
+                    self?.dismiss(animated: true, completion: nil)
+                }
+            }
+            .disposed(by: disposeBag)
+        
         groupNameTextField.rx.text
             .orEmpty
             .distinctUntilChanged()
             .subscribe { [weak self] name in
-//                self?.viewModel.groupNameSubject.onNext(name)
+                self?.viewModel.groupNameSubject.accept(name)
             }
             .disposed(by: disposeBag)
         
         generateButton.rx.tap
             .bind { [weak self] _ in
                 // 그룹 생성 API
-                
+                self?.viewModel.generateGroup()
+            }
+            .disposed(by: disposeBag)
+        
+        dismissButton.rx.tap
+            .bind { [weak self] _ in
+                self?.dismiss(animated: true, completion: nil)
             }
             .disposed(by: disposeBag)
     }

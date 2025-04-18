@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LoginResultDTO : Codable {
+struct ResponseDTO : Codable {
     let status : String
     var data : Data?
     var message : String?

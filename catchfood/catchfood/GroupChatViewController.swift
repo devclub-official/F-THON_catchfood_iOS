@@ -60,6 +60,12 @@ class GroupChatViewController: UIViewController {
         bind()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        viewModel.getParties()
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         //observer해제
@@ -108,6 +114,7 @@ class GroupChatViewController: UIViewController {
         viewModel.isAccessGroupChat
             .subscribe { [weak self] isAccess in
                 self?.chatListTableView.isHidden = !isAccess
+                self?.addGroupButton.isHidden = isAccess
             }
             .disposed(by: disposeBag)
         
@@ -117,7 +124,7 @@ class GroupChatViewController: UIViewController {
             if let storeItem = item as? RecommendedStore
             {
                 guard let cell = self?.chatListTableView.dequeueReusableCell(withIdentifier: "RECOMMENDED_STORE_CELL", for: indexPath) as? RecommendedStoreCell else {return UITableViewCell()}
-                cell.bind(storeItem)
+                cell.bind(storeItem, ongoing: self?.viewModel.ongoing)
                 return cell
             }
             else if let chatItem = item as? Chatting
@@ -161,10 +168,10 @@ class GroupChatViewController: UIViewController {
         searchButton.rx.tap
             .bind { [weak self] _ in
                 //
-//                guard let message = self?.searchTextField.text else {return}
+                guard let message = self?.searchTextField.text else {return}
                 
 //                self?.viewModel.inputChatting(message)
-                self?.viewModel.inputRecommendedStore()
+                self?.viewModel.getVotePoll(message)
                 self?.searchTextField.text = ""
             }
             .disposed(by: disposeBag)
