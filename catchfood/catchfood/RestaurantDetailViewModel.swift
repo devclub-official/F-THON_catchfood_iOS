@@ -25,12 +25,14 @@ final class RestaurantDetailViewModel {
     }
     
     func transform(input: Input) -> Output {
-        let fetchObservable = Observable<RestaurantDetail>.create { observer in
-            // TODO: API
-            observer.onNext(RestaurantDetail.dummyData)
-            observer.onCompleted()
-            return Disposables.create()
-        }
+        let fetchObservable = APIService.shared.request(APIEndpoint(path: "/stores/\(restaurantId)", method: .get, headers: [
+            "X-User-Name": NicknameStorageService.shared.getNickname() ?? "yubin"
+        ]), type: StoreDetailResponse.self)
+            .map { dto in
+                print(dto)
+                return StoreDetailMapper().dtoToEntity(dto)
+            }
+
 
         let materialized = fetchObservable
             .materialize()

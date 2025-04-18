@@ -55,7 +55,7 @@ class LoginViewController : UIViewController {
     private let disposeBag = DisposeBag()
     
     private let viewModel = LoginViewModel()
-    
+    private let loginTrigger = PublishSubject<String>()
     override func viewDidLoad() {
         super.viewDidLoad()
         setViewLayout()
@@ -96,31 +96,40 @@ class LoginViewController : UIViewController {
     
     func bind()
     {
-        viewModel.isLogin
-            .subscribe { isLogin in
-                if isLogin
-                {
-                    let viewController = TabBarController()
-                    (UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate)?.changeRootVC(viewController, animated: false)
-                }
-            }
+        let input = LoginViewModel.Input(login: loginTrigger.asObservable())
+        let output = viewModel.transform(input: input)
+        nicknameTextField.rx.text
+            .orEmpty
+            .map { !$0.trimmingCharacters(in: .whitespaces).isEmpty } 
+            .bind(to: confirmButton.rx.isEnabled)
             .disposed(by: disposeBag)
-        
         confirmButton.rx.tap
             .withUnretained(self)
             .bind { [weak self] _ in
-                self?.viewModel.signUp()
+                self?.loginTrigger.onNext(self?.nicknameTextField.text ?? "")
             }
             .disposed(by: disposeBag)
         
-        nicknameTextField.rx.text
-            .orEmpty
-            .distinctUntilChanged()
-            .map(viewModel.checkTextfieldEmpty(_:))
-            .subscribe { [weak self] isEmpty in
-                self?.confirmButton.isEnabled = !isEmpty
-                self?.confirmButton.backgroundColor = isEmpty ? UIColor.orange.withAlphaComponent(0.7) : UIColor.orange
-            }
+        output.loginResult
+            .filter { $0 }
+            .emit(onNext: { [weak self] _ in
+                NicknameStorageService.shared.saveNickname(self?.nicknameTextField.text ?? "")
+                self?.changeToMainTabBar()
+            })
             .disposed(by: disposeBag)
+    }
+    
+    private func changeToMainTabBar() {
+        let tabBarController = TabBarController()
+        
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let sceneDelegate = windowScene.delegate as? SceneDelegate,
+              let window = sceneDelegate.window else {
+            return
+        }
+
+        UIView.transition(with: window, duration: 0.3, options: [.transitionFlipFromRight], animations: {
+            window.rootViewController = tabBarController
+        })
     }
 }

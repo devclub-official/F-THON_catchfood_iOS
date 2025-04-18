@@ -11,6 +11,7 @@ import RxCocoa
 import SnapKit
 
 final class RestaurantDetailViewController: UIViewController {
+    private let errorView = ErrorView()
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .aTeamHeadLineTextColor
@@ -91,6 +92,7 @@ final class RestaurantDetailViewController: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        errorView.isHidden = true
         setupTableView()
         setupUI()
         bind()
@@ -118,16 +120,31 @@ final class RestaurantDetailViewController: UIViewController {
                 cell.selectionStyle = .none
             }
             .disposed(by: disposeBag)
+        
+        output.showErrorPage
+            .drive { [weak self] state in
+                self?.errorView.isHidden = !state
+            }
+            .disposed(by: disposeBag)
     }
     
     private func updateData(_ data: RestaurantDetail) {
         titleLabel.text = data.storeName
-        categoryLabel.text = data.category
-        walkLabel.text = "도보 \(data.minutesByWalk)분"
-        addressLabel.text = data.address
-        contactLabel.text = data.contact
+
+        if data.category == nil || data.category!.isEmpty {
+            categoryLabel.isHidden = true
+        } else {
+            categoryLabel.text = data.category
+        }
+        if data.minutesByWalk == nil {
+            walkLabel.isHidden = true
+        } else {
+            walkLabel.text = "도보 \(data.minutesByWalk!)분"
+        }
+        addressLabel.text = "주소: \(data.address ?? "")"
+        contactLabel.text = "연락처: \(data.contact ?? "")"
         businessHoursLabel.text = "영업시간: \(data.businessHours)"
-        ratingStars.text = "별점: \(data.ratingStars) 점"
+        ratingStars.text = "별점: \(data.ratingStars ?? 0.0) 점"
         
     }
 }
@@ -144,7 +161,8 @@ extension RestaurantDetailViewController {
             businessHoursLabel,
             ratingStars,
             menuTitle,
-            tableView
+            tableView,
+            errorView
         ])
         
         [categoryLabel, walkLabel].forEach {
@@ -191,6 +209,9 @@ extension RestaurantDetailViewController {
             make.top.equalTo(menuTitle.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.safeAreaInsets).inset(20)
+        }
+        errorView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
     }
 }
