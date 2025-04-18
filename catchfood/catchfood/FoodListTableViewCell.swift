@@ -8,6 +8,16 @@ import UIKit
 import SnapKit
 final class FoodListTableViewCell: UITableViewCell {
     var restaurant: Restaurants? = nil
+    private let containerView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 16
+        view.clipsToBounds = true
+        view.layer.borderColor = UIColor.aTeamBorderColor.cgColor
+        view.layer.borderWidth = 1
+        return view
+    }()
+
     private let restaurantImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -80,9 +90,14 @@ final class FoodListTableViewCell: UITableViewCell {
         }
     }
     private func setupUI() {
-        contentView.addSubviews(views: [restaurantImageView, infoContainer, likeButton])
+        contentView.addSubview(containerView)
+        containerView.addSubviews(views: [restaurantImageView, infoContainer, likeButton])
         infoContainer.addSubviews(views: [titleLabel, categoryLabel, walkImageView, walkLabel])
         
+        containerView.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview().inset(4)
+            make.leading.trailing.equalToSuperview()
+        }
         restaurantImageView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(16)
             make.top.bottom.equalToSuperview().inset(12)

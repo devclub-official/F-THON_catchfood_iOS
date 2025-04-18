@@ -10,7 +10,7 @@ import UIKit
 extension UIColor {
     // MARK: - Brand
     /// 메인 강조 색상 (버튼, 포인트 등)
-    //static let primaryColor = UIColor(hex: "#3A86FF")
+    static let primaryColor = UIColor(hex: "#ED6324")
     /// 서브 강조 색상 (포인트 강조, 배지 등)
     //static let secondaryColor = UIColor(hex: "#FFBE0B")
     
