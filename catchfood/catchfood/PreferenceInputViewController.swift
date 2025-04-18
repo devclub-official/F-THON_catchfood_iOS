@@ -97,11 +97,18 @@ final class PreferenceInputViewController: UIViewController {
     private let saveButton = CFButton(styleType: .filled, title: "편집하기")
     
     private let currentMode = BehaviorRelay<PreferenceInputMode>(value: .view)
+    private let refreshTrigger = PublishSubject<Void>()
+    private let editPreferenceTrigger = PublishRelay<Void>()
     
     private let vm = PreferenceInputViewModel()
     private let disposeBag = DisposeBag()
     init() {
         super.init(nibName: nil, bundle: nil)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        refreshTrigger.onNext(())
     }
     
     @available(*, unavailable)
@@ -119,10 +126,15 @@ final class PreferenceInputViewController: UIViewController {
         // 버튼 탭 → 모드 전환 스트림
         saveButton.rx.tap
             .withUnretained(self)
-            .subscribe { vc, _ in
-                let mode: PreferenceInputMode = vc.currentMode.value == .edit ? .view : .edit
-                vc.currentMode.accept(mode)
-            }
+            .subscribe(onNext: { vc, _ in
+                if vc.currentMode.value == .edit {
+                    // ✅ 저장 트리거 전송
+                    vc.editPreferenceTrigger.accept(())
+                } else {
+                    // ✅ 편집 모드 진입
+                    vc.currentMode.accept(.edit)
+                }
+            })
             .disposed(by: disposeBag)
         likeTextView.rx.text
             .orEmpty
@@ -142,11 +154,14 @@ final class PreferenceInputViewController: UIViewController {
             .bind(to: etcTextView.rx.text)
             .disposed(by: disposeBag)
 
+        
         let input = PreferenceInputViewModel.Input(
+            refreshTrigger: refreshTrigger.asObservable(),
             changeMode: currentMode.asObservable(),
             likeMessage: likeTextView.rx.text.orEmpty.asObservable(),
             dislikeMessage: dislikeTextView.rx.text.orEmpty.asObservable(),
-            etcMessage: etcTextView.rx.text.orEmpty.asObservable()
+            etcMessage: etcTextView.rx.text.orEmpty.asObservable(),
+            editPreference: editPreferenceTrigger.asObservable()
         )
         
         let output = vm.transform(input: input)
@@ -171,6 +186,18 @@ final class PreferenceInputViewController: UIViewController {
             .drive(onNext: { [weak self] cnt in
                 self?.etcTextCount.text = "\(cnt)/100"
             })
+            .disposed(by: disposeBag)
+        
+        output.initialLikeMessage
+            .drive(likeTextView.rx.text)
+            .disposed(by: disposeBag)
+
+        output.initialDislikeMessage
+            .drive(dislikeTextView.rx.text)
+            .disposed(by: disposeBag)
+
+        output.initialEtcMessage
+            .drive(etcTextView.rx.text)
             .disposed(by: disposeBag)
     }
     

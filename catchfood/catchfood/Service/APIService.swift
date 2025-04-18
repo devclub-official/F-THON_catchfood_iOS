@@ -74,6 +74,7 @@ final class APIService {
                 .responseDecodable(of: T.self) { response in
                     switch response.result {
                     case .success(let value):
+                        print(value)
                         observer.onNext(value)
                         observer.onCompleted()
                     case .failure(let error):

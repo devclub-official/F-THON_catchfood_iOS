@@ -11,7 +11,7 @@ import UIKit
 
 final class SearchViewModel {
     struct Input {
-        //        let buttonTap: Observable<Void>
+        let keywoard: Observable<String>
     }
     
     struct Output {
@@ -19,9 +19,31 @@ final class SearchViewModel {
     }
     
     func transform(input: Input) -> Output {
-        let dummy = Restaurants.dummyData
-        let observable = Observable.just(dummy)
-        return Output(restaurants: observable.asDriver(onErrorJustReturn: []))
+        let restaurants = input.keywoard
+            .distinctUntilChanged()
+            .flatMapLatest { keyword -> Observable<[Restaurants]> in
+                let parameters: [String: Any]? = keyword.isEmpty ? nil : ["keyword": keyword]
+
+                let endpoint = APIEndpoint(
+                    path: "/stores",
+                    method: .get,
+                    parameters: parameters,
+                    headers: [
+                        "X-User-Name": NicknameStorageService.shared.getNickname() ?? "yubin"
+                    ]
+                )
+
+                return APIService.shared.request(endpoint, type: StoresResponse.self)
+                    .map { dto in
+                        let stores = StoreListMapper().dtoToEntity(dto)
+                        print(stores)
+                        return stores
+                    }
+                    .catchAndReturn([])
+            }
+            .asDriver(onErrorJustReturn: [])
+        
+        return Output(restaurants: restaurants)
     }
 }
 
