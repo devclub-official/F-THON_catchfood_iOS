@@ -19,7 +19,7 @@ class GroupChatViewController: UIViewController {
         view.backgroundColor = .white
         return view
     }()
-    
+    private var memberButton = CFButton(styleType: .outline, title: "멤버초대")
     private var chatListTableView : UITableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .clear
@@ -79,12 +79,17 @@ class GroupChatViewController: UIViewController {
         containerView.snp.makeConstraints { make in
             make.left.top.right.bottom.equalToSuperview()
         }
-        
+        containerView.addSubview(memberButton)
         containerView.addSubview(searchButton)
         searchButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-12)
+//            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-12)
             make.trailing.equalToSuperview().inset(16)
             make.size.equalTo(36)
+        }
+        memberButton.snp.makeConstraints { make in
+            make.bottom.equalTo(view.safeAreaLayoutGuide).offset(-12)
+            make.top.equalTo(searchButton.snp.bottom).offset(5)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(8)
         }
         
         containerView.addSubview(searchTextField)
@@ -111,6 +116,12 @@ class GroupChatViewController: UIViewController {
     
     func bind()
     {
+        memberButton.rx.tap
+            .subscribe { [weak self] _ in
+                let vc = GroupMemberInviteViewController()
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }
+            .disposed(by: disposeBag)
         viewModel.isAccessGroupChat
             .subscribe { [weak self] isAccess in
                 self?.chatListTableView.isHidden = !isAccess

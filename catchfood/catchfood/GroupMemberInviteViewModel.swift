@@ -21,7 +21,7 @@ final class GroupMemberInviteViewModel {
         let inviteSuccess: Signal<Void>
     }
     func transform(input: Input) -> Output {
-        let id = "3"
+        let id = NicknameStorageService.shared.getPartyId() ?? 1으
 
         let initialMembers = APIService.shared.request(
             APIEndpoint(
