@@ -11,6 +11,7 @@ import RxCocoa
 import SnapKit
 
 final class RestaurantDetailViewController: UIViewController {
+    private let errorView = ErrorView()
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = .aTeamHeadLineTextColor
@@ -91,6 +92,7 @@ final class RestaurantDetailViewController: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        errorView.isHidden = true
         setupTableView()
         setupUI()
         bind()
@@ -116,6 +118,12 @@ final class RestaurantDetailViewController: UIViewController {
                 cell.setupData(menu: menu)
                 cell.backgroundColor = .clear
                 cell.selectionStyle = .none
+            }
+            .disposed(by: disposeBag)
+        
+        output.showErrorPage
+            .drive { [weak self] state in
+                self?.errorView.isHidden = !state
             }
             .disposed(by: disposeBag)
     }
@@ -144,7 +152,8 @@ extension RestaurantDetailViewController {
             businessHoursLabel,
             ratingStars,
             menuTitle,
-            tableView
+            tableView,
+            errorView
         ])
         
         [categoryLabel, walkLabel].forEach {
@@ -191,6 +200,9 @@ extension RestaurantDetailViewController {
             make.top.equalTo(menuTitle.snp.bottom).offset(12)
             make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.safeAreaInsets).inset(20)
+        }
+        errorView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
     }
 }
