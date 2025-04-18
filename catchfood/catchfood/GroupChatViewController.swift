@@ -201,10 +201,10 @@ class GroupChatViewController: UIViewController {
     
     @objc func textViewMoveDown(_ noti : Notification)
     {
-        UIView.animate(withDuration: 0.3, animations: {
-            self.searchButton.snp.updateConstraints { make in
-                make.bottom.equalTo(self.view.safeAreaLayoutGuide).offset(-12)
-            }
-        })
+//        UIView.animate(withDuration: 0.3, animations: {
+//            self.searchButton.snp.updateConstraints { make in
+//                make.bottom.equalTo(self.view.safeAreaLayoutGuide).offset(-12)
+//            }
+//        })
     }
 }
