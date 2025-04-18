@@ -110,6 +110,7 @@ final class PreferenceInputViewController: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.navigationBar.isHidden = true
         setupUI()
         bind()
     }
