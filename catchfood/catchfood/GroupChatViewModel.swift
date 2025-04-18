@@ -8,6 +8,7 @@
 import Foundation
 import RxSwift
 import RxCocoa
+import Alamofire
 
 class GroupChatViewModel {
     
@@ -32,5 +33,35 @@ class GroupChatViewModel {
         
         groupChatListItems.accept(itemsArray)
     }
+    
+    func getParties()
+    {
+        let headers : HTTPHeaders = [
+           "X-User-Name" : "Jongchan"
+        ]
+        AF.request(baseURLStr + "parties", method: .get, encoding: URLEncoding.default, headers: headers).validate().responseData { response in
+            switch response.result {
+            case .success(let data):
+                do {
+                    let decoder = JSONDecoder()
+                    let json = try decoder.decode(PartiesResponseDTO.self, from: data)
+                    if json.data.isEmpty
+                    {
+                        self.isAccessGroupChat.accept(false)
+                    }
+                    else
+                    {
+                        self.isAccessGroupChat.accept(true)
+                    }
+                    print("get success parties!! : \(json)")
+                } catch {
+                    print(error)
+                }
+            case .failure(let error):
+                NSLog("get parties error : " + error.localizedDescription)
+            }
+        }
+    }
+    
 }
 

@@ -28,7 +28,7 @@ class GroupListViewController: UIViewController {
     
     private var groupListTableView : UITableView = {
         let tableView = UITableView()
-        tableView.backgroundColor = .clear
+        tableView.backgroundColor = .white
         tableView.separatorStyle = .none
         tableView.rowHeight = UITableView.automaticDimension
         tableView.showsVerticalScrollIndicator = false
@@ -56,7 +56,7 @@ class GroupListViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        
+        viewModel.getGroupLists()
     }
     
     func setViewLayout()
@@ -96,6 +96,12 @@ class GroupListViewController: UIViewController {
             .bind { [weak self] _ in
                 self?.dismiss(animated: false)
             }
+            .disposed(by: disposeBag)
+        
+        viewModel.groupListsRelay
+            .subscribe(onNext: { [weak self] groups in
+                self?.groupListTableView.isHidden = groups.isEmpty
+            })
             .disposed(by: disposeBag)
         
         viewModel.groupListsRelay.bind(to: groupListTableView.rx.items(cellIdentifier: "GROUP_LIST_CELL", cellType: GroupListCell.self)){ row, element, cell in

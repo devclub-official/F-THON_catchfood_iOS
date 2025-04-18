@@ -60,6 +60,12 @@ class GroupChatViewController: UIViewController {
         bind()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        viewModel.getParties()
+    }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         //observer해제
@@ -108,6 +114,7 @@ class GroupChatViewController: UIViewController {
         viewModel.isAccessGroupChat
             .subscribe { [weak self] isAccess in
                 self?.chatListTableView.isHidden = !isAccess
+                self?.addGroupButton.isHidden = isAccess
             }
             .disposed(by: disposeBag)
         
