@@ -26,6 +26,7 @@ final class SearchViewController: UIViewController {
     }
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.title = "오늘 뭐먹지?"
         setupTableView()
         setupUI()
         bind()
@@ -52,7 +53,7 @@ final class SearchViewController: UIViewController {
         }
         tableView.snp.makeConstraints { make in
             make.top.equalTo(searchTextField.snp.bottom).offset(8)
-            make.leading.trailing.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
     }
@@ -64,7 +65,18 @@ final class SearchViewController: UIViewController {
         output.restaurants
             .drive(tableView.rx.items(cellIdentifier: "FoodListTableViewCell", cellType: FoodListTableViewCell.self)) { row, restaurant, cell in
                 cell.setupData(restaurant: restaurant, isHiddenLikeButton: true)
+                cell.selectionStyle = .none
+                cell.backgroundColor = .clear
             }
+            .disposed(by: disposeBag)
+        
+        tableView.rx.modelSelected(Restaurants.self)
+            .subscribe(onNext: { [weak self] restaurant in
+                // 여기에 이동 or 출력 등 원하는 동작
+                print("클릭된 식당: \(restaurant.title)")
+                let detailVC = RestaurantDetailViewController(restaurantId: restaurant.id)
+                self?.navigationController?.pushViewController(detailVC, animated: true)
+            })
             .disposed(by: disposeBag)
     }
 }

@@ -54,21 +54,7 @@ class LoginViewController : UIViewController {
     
     private let disposeBag = DisposeBag()
     
-    private var viewModel : LoginViewModel!
-    
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    convenience init(_ viewModel : LoginViewModel)
-    {
-        self.init(nibName: nil, bundle: nil)
-        self.viewModel = viewModel
-    }
+    private let viewModel = LoginViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -110,15 +96,26 @@ class LoginViewController : UIViewController {
     
     func bind()
     {
+        viewModel.isLogin
+            .subscribe { isLogin in
+                if isLogin
+                {
+                    let viewController = TabBarController()
+                    (UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate)?.changeRootVC(viewController, animated: false)
+                }
+            }
+            .disposed(by: disposeBag)
+        
         confirmButton.rx.tap
             .withUnretained(self)
-            .bind { _ in
-                
+            .bind { [weak self] _ in
+                self?.viewModel.signUp()
             }
             .disposed(by: disposeBag)
         
         nicknameTextField.rx.text
             .orEmpty
+            .distinctUntilChanged()
             .map(viewModel.checkTextfieldEmpty(_:))
             .subscribe { [weak self] isEmpty in
                 self?.confirmButton.isEnabled = !isEmpty

@@ -208,7 +208,7 @@ class RecommendedStoreCell : UITableViewCell {
         voteButton.setImage(store.isVotedByMe ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "checkmark.circle"), for: .normal)
         
         store.votedMembers.forEach { [weak self] name in
-            let view = VoteMemberView()
+            let view = MemberView()
             view.setupData(name)
             self?.voteMembersView.addArrangedSubview(view)
         }

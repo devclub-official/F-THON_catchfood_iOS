@@ -133,6 +133,16 @@ class GroupChatViewController: UIViewController {
         }
         .disposed(by: disposeBag)
         
+        addGroupButton.rx.tap
+            .bind { [weak self] _ in
+                guard let tabbar = self?.tabBarController else {return}
+                let vc = GroupListViewController()
+                vc.modalTransitionStyle = .coverVertical
+                vc.modalPresentationStyle = .fullScreen
+                tabbar.present(vc, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
         searchTextField.rx.text
             .orEmpty
             .subscribe(onNext: { [weak self] text in

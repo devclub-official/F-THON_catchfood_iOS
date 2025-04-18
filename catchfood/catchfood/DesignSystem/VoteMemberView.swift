@@ -1,5 +1,5 @@
 //
-//  VoteMemberView.swift
+//  MemberView.swift
 //  catchfood
 //
 //  Created by 정종찬 on 4/19/25.
@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 import SnapKit
 
-final class VoteMemberView : UIView {
+final class MemberView : UIView {
     
     private var containerView : UIView = {
         let view = UIView()
