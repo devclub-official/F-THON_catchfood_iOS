@@ -20,7 +20,7 @@ class GroupGenerateViewModel {
     func generateGroup()
     {
         let headers : HTTPHeaders = [
-            "X-User-Name" : "Jongchan"
+            "X-User-Name" : NicknameStorageService.shared.getNickname()!
         ]
         
         let params : Parameters = ["partyName" : groupNameSubject.value]
@@ -30,7 +30,7 @@ class GroupGenerateViewModel {
             case .success(let data):
                 do {
                     let decoder = JSONDecoder()
-                    let json = try decoder.decode(GeneratePartiesResponseDTO.self, from: data)
+                    let json = try decoder.decode(ResponseDTO.self, from: data)
                     self.groupGenerateResult.accept(true)
                     print("get success parties!! : \(json)")
                 } catch {

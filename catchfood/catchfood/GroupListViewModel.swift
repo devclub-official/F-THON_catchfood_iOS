@@ -15,7 +15,7 @@ class GroupListViewModel {
     
     func getGroupLists() {
         let headers : HTTPHeaders = [
-            "X-User-Name" : "Jongchan"
+            "X-User-Name" : NicknameStorageService.shared.getNickname()!
         ]
         
         AF.request(baseURLStr + "parties", method: .get, encoding: URLEncoding.default, headers: headers).validate().responseData { response in
@@ -24,7 +24,12 @@ class GroupListViewModel {
                 do {
                     let decoder = JSONDecoder()
                     let json = try decoder.decode(PartiesResponseDTO.self, from: data)
-                    if json.data.isEmpty
+                    if let parties = json.data.first
+                    {
+                        NicknameStorageService.shared.savePartyId(parties.id)
+                    }
+                    
+                    if !json.data.isEmpty
                     {
                         self.groupListsRelay.accept(json.data)
                     }

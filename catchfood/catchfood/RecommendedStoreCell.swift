@@ -180,7 +180,7 @@ class RecommendedStoreCell : UITableViewCell {
         }
     }
     
-    func bind(_ store : RecommendedStore)
+    func bind(_ store : RecommendedStore, ongoing : Int?)
     {
         viewModel.voteToggleRelay
             .subscribe { [weak self] voted in
@@ -194,6 +194,12 @@ class RecommendedStoreCell : UITableViewCell {
              }
             .bind { [weak self] vote in
                 self?.viewModel.voteToggleRelay.accept(vote)
+                
+                if vote
+                {
+                    guard let ongoing = ongoing else {return}
+                    self?.viewModel.votingFoot(store: store, ongoing: ongoing)
+                }
             }
             .disposed(by: disposeBag)
         
