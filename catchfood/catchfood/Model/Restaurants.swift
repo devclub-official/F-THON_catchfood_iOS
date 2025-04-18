@@ -9,8 +9,8 @@ struct Restaurants {
     let id: Int
     let imageStr: String
     let title: String
-    let category: String
-    let minutes: Int
+    let category: String?
+    let minutes: Int?
     let isLike: Bool
     
     static let dummyData: [Restaurants] = [

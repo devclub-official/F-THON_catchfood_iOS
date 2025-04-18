@@ -60,7 +60,7 @@ final class MenuCell: UITableViewCell {
     func setupData(menu: Menu) {
         self.menu = menu
         self.titleLabel.text = menu.menuName
-        self.priceLabel.text = "\(menu.price) 원"
+        self.priceLabel.text = (menu.price == 0) ? "" : "\(menu.price) 원"
         ImageLoadHelper.shared.loadImage(from: menu.imageUrl) { [weak self] image in
             guard let self = self else { return }
             menuImageView.image = image

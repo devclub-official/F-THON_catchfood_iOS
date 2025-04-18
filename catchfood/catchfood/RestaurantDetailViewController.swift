@@ -130,12 +130,21 @@ final class RestaurantDetailViewController: UIViewController {
     
     private func updateData(_ data: RestaurantDetail) {
         titleLabel.text = data.storeName
-        categoryLabel.text = data.category
-        walkLabel.text = "도보 \(data.minutesByWalk)분"
-        addressLabel.text = data.address
-        contactLabel.text = data.contact
+
+        if data.category == nil || data.category!.isEmpty {
+            categoryLabel.isHidden = true
+        } else {
+            categoryLabel.text = data.category
+        }
+        if data.minutesByWalk == nil {
+            walkLabel.isHidden = true
+        } else {
+            walkLabel.text = "도보 \(data.minutesByWalk!)분"
+        }
+        addressLabel.text = "주소: \(data.address ?? "")"
+        contactLabel.text = "연락처: \(data.contact ?? "")"
         businessHoursLabel.text = "영업시간: \(data.businessHours)"
-        ratingStars.text = "별점: \(data.ratingStars) 점"
+        ratingStars.text = "별점: \(data.ratingStars ?? 0.0) 점"
         
     }
 }
