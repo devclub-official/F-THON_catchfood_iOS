@@ -24,5 +24,5 @@ struct StoresItem: Codable {
 
 struct Representative: Codable {
     let name: String
-    let imageUrl: String
+    let imageUrl: String?
 }

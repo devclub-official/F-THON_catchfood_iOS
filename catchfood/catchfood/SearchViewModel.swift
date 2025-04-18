@@ -29,7 +29,7 @@ final class SearchViewModel {
                     method: .get,
                     parameters: parameters,
                     headers: [
-                        "X-User-Name": NicknameStorageService.shared.getNickname() ?? "yubin"
+                        "X-User-Name": NicknameStorageService.shared.getNickname() ?? "Yubin"
                     ]
                 )
 
