@@ -13,14 +13,14 @@ import RxCocoa
 
 class LoginViewController : UIViewController {
     
-    var containerView : UIView = {
+    private var containerView : UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .white
         return view
     }()
     
-    lazy var logoImageView : UIImageView = {
+    private lazy var logoImageView : UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "app_logo")
         imageView.contentMode = .scaleAspectFit
@@ -29,7 +29,7 @@ class LoginViewController : UIViewController {
         return imageView
     }()
     
-    var nicknameTextField : UITextField = {
+    private var nicknameTextField : UITextField = {
         let textField = UITextField()
         textField.layer.cornerRadius = 8
         textField.layer.borderWidth = 1
@@ -41,20 +41,20 @@ class LoginViewController : UIViewController {
         return textField
     }()
     
-    var confirmButton : UIButton = {
+    private var confirmButton : UIButton = {
         let button = UIButton()
         button.layer.cornerRadius = 8
         button.setTitle("확인", for: .normal)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor.orange.withAlphaComponent(0.7)
+        button.backgroundColor = UIColor.orange.withAlphaComponent(0.5)
         button.isEnabled = false
         button.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
         return button
     }()
     
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
     
-    var viewModel : LoginViewModel!
+    private var viewModel : LoginViewModel!
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nil, bundle: nil)
@@ -103,7 +103,7 @@ class LoginViewController : UIViewController {
         confirmButton.snp.makeConstraints { make in
             make.left.equalTo(20)
             make.right.equalTo(-20)
-            make.bottom.equalToSuperview().offset(-10)
+            make.bottom.equalToSuperview().offset(-30)
             make.height.equalTo(56)
         }
     }

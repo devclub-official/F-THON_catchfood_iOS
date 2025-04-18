@@ -8,19 +8,24 @@
 import Foundation
 import UIKit
 import SnapKit
+import RxSwift
+import RxCocoa
 
-class VotingMenuCell : UITableViewCell {
+class RecommendedStoreCell : UITableViewCell {
     
     var containerView : UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .white
+        view.layer.cornerRadius = 8
+        view.backgroundColor = UIColor(hex: "#F2F2F2")
         return view
     }()
     
     lazy var menuImageView : UIImageView = {
         let imageView = UIImageView()
         imageView.layer.cornerRadius = 8
+        imageView.layer.borderColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        imageView.layer.borderWidth = 1
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
         return imageView
@@ -45,9 +50,16 @@ class VotingMenuCell : UITableViewCell {
     var categoryLabel : UILabel = {
         let label = UILabel()
         label.textAlignment = .center
-        label.textColor = UIColor.white
+        label.textColor = UIColor.black
         label.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         return label
+    }()
+    
+    var separator : UIView = {
+        let view = UIView()
+        view.backgroundColor = .grayScale800
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
     var timeFromStepLabel : UILabel = {
@@ -58,11 +70,25 @@ class VotingMenuCell : UITableViewCell {
         return label
     }()
     
+    var voteMembersView : UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .fill
+        stackView.distribution = .equalSpacing
+        stackView.spacing = 4
+        return stackView
+    }()
+    
     var voteButton : UIButton = {
         let button = UIButton()
-        button.backgroundColor = .red
+        button.setImage(UIImage(systemName: "checkmark.circle"), for: .normal)
+        button.contentMode = .scaleAspectFill
         return button
     }()
+    
+    let viewModel = RecommendedStoreCellViewModel()
+    
+    var disposeBag : DisposeBag = DisposeBag()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -71,7 +97,6 @@ class VotingMenuCell : UITableViewCell {
         selectionStyle = .none
         
         setViewLayout()
-        bind()
     }
     
     required init?(coder: NSCoder) {
@@ -80,12 +105,20 @@ class VotingMenuCell : UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        
+        disposeBag = DisposeBag()
+        
+        menuImageView.image = nil
+        menuNameLabel.text = ""
+        restaurantNameLabel.text = ""
+        categoryLabel.text = ""
+        timeFromStepLabel.text = ""
     }
     
     func setViewLayout() {
         contentView.addSubview(containerView)
         containerView.snp.makeConstraints { make in
-            make.left.top.right.bottom.equalToSuperview().inset(8)
+            make.left.top.right.bottom.equalToSuperview().inset(12)
         }
         
         containerView.addSubview(menuImageView)
@@ -116,23 +149,69 @@ class VotingMenuCell : UITableViewCell {
             make.top.equalTo(menuImageView.snp.bottom).offset(12)
         }
         
+        containerView.addSubview(separator)
+        separator.snp.makeConstraints { make in
+            make.left.equalTo(categoryLabel.snp.right).offset(5)
+            make.centerY.equalTo(categoryLabel.snp.centerY)
+            make.width.equalTo(1)
+            make.height.equalTo(10)
+        }
+        
         containerView.addSubview(timeFromStepLabel)
         timeFromStepLabel.snp.makeConstraints { make in
-            make.left.equalTo(categoryLabel.snp.right).offset(12)
+            make.left.equalTo(separator.snp.right).offset(5)
             make.centerY.equalTo(categoryLabel.snp.centerY)
+        }
+        
+        containerView.addSubview(voteMembersView)
+        voteMembersView.snp.makeConstraints { make in
+            make.left.equalTo(20)
+            make.top.equalTo(categoryLabel.snp.bottom).offset(8)
+            make.height.equalTo(30)
         }
         
         containerView.addSubview(voteButton)
         voteButton.snp.makeConstraints { make in
             make.right.equalTo(-20)
-            make.bottom.equalTo(-20)
+            make.top.equalTo(voteMembersView.snp.bottom).offset(10)
+            make.bottom.equalTo(-10)
             make.width.equalTo(50)
             make.height.equalTo(50)
         }
     }
     
-    func bind()
+    func bind(_ store : RecommendedStore)
     {
+        viewModel.voteToggleRelay
+            .subscribe { [weak self] voted in
+                self?.voteButton.setImage(voted ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "checkmark.circle"), for: .normal)
+            }
+            .disposed(by: disposeBag)
+        
+        voteButton.rx.tap
+            .scan(false) { (lastState, newValue) in
+                !lastState
+             }
+            .bind { [weak self] vote in
+                self?.viewModel.voteToggleRelay.accept(vote)
+            }
+            .disposed(by: disposeBag)
+        
+        ImageLoadHelper.shared.loadImage(from: store.representativeMenu.imageUrl) { [weak self] image in
+            self?.menuImageView.image = image
+        }
+        
+        menuNameLabel.text = store.representativeMenu.name
+        restaurantNameLabel.text = store.storeName
+        categoryLabel.text = store.category
+        timeFromStepLabel.text = "\(store.distanceInMinutesByWalk)분"
+        voteButton.setImage(store.isVotedByMe ? UIImage(systemName: "checkmark.circle.fill") : UIImage(systemName: "checkmark.circle"), for: .normal)
+        
+        store.votedMembers.forEach { [weak self] name in
+            let view = VoteMemberView()
+            view.setupData(name)
+            self?.voteMembersView.addArrangedSubview(view)
+        }
         
     }
 }
