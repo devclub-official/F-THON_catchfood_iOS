@@ -95,7 +95,7 @@ final class PreferenceInputViewController: UIViewController {
     private let etcTextView = CFTextView(placeholder: "예시)한끼에 만오천원 이하였으면 좋겠어요")
     
     private let saveButton = CFButton(styleType: .filled, title: "편집하기")
-    
+    private let logoutButton = CFButton(styleType: .outline, title: "로그아웃")
     private let currentMode = BehaviorRelay<PreferenceInputMode>(value: .view)
     private let refreshTrigger = PublishSubject<Void>()
     private let editPreferenceTrigger = PublishRelay<Void>()
@@ -199,8 +199,26 @@ final class PreferenceInputViewController: UIViewController {
         output.initialEtcMessage
             .drive(etcTextView.rx.text)
             .disposed(by: disposeBag)
+        
+        logoutButton.rx.tap
+            .subscribe { [weak self] _ in
+                self?.changeToLoginView()
+            }
+            .disposed(by: disposeBag)
     }
-    
+    private func changeToLoginView() {
+        let tabBarController = LoginViewController()
+        
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let sceneDelegate = windowScene.delegate as? SceneDelegate,
+              let window = sceneDelegate.window else {
+            return
+        }
+
+        UIView.transition(with: window, duration: 0.3, options: [.transitionFlipFromRight], animations: {
+            window.rootViewController = tabBarController
+        })
+    }
     private func setupMode(_ mode: PreferenceInputMode) {
         switch mode {
         case .edit:
@@ -244,7 +262,8 @@ extension PreferenceInputViewController {
             etcTitleLabel,
             etcTextCount,
             etcTextView,
-            saveButton
+            saveButton,
+            logoutButton
         ])
         
         nicknameTitleLable.snp.makeConstraints { make in
@@ -311,6 +330,12 @@ extension PreferenceInputViewController {
         
         saveButton.snp.makeConstraints { make in
             make.top.equalTo(etcTextView.snp.bottom).offset(20)
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.height.equalTo(50)
+        }
+        
+        logoutButton.snp.makeConstraints { make in
+            make.top.equalTo(saveButton.snp.bottom).offset(20)
             make.leading.trailing.equalToSuperview().inset(16)
             make.height.equalTo(50)
             make.bottom.equalToSuperview().offset(-40)
