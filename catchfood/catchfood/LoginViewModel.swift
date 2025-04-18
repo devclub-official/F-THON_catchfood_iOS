@@ -8,6 +8,7 @@
 import RxSwift
 import RxCocoa
 import UIKit
+import Alamofire
 
 final class LoginViewModel {
     struct Input {
@@ -26,10 +27,21 @@ final class LoginViewModel {
                     method: .post,
                     parameters: ["name": nickname]
                 )
-                
+
                 return APIService.shared.request(endpoint, type: StatusResponse.self)
-                    .map { $0.status == "SUCCESS" }
-                    .catchAndReturn(false)
+                    .map { $0.status == "SUCCESS" } // 200 OK + SUCCESS
+                    .catch { error in
+                        // 🔍 에러가 AFError 혹은 underlying HTTP 오류인 경우
+                        if let afError = error as? AFError,
+                           case let .responseValidationFailed(reason) = afError,
+                           case let .unacceptableStatusCode(code) = reason,
+                           code == 400 {
+                            return .just(true) // ✅ 400이면 true 반환
+                        }
+
+                        // 그 외는 실패
+                        return .just(false)
+                    }
             }
             .asSignal(onErrorJustReturn: false)
 
