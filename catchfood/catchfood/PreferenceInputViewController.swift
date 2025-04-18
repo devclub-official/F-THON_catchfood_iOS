@@ -19,7 +19,7 @@ final class PreferenceInputViewController: UIViewController {
         label.textColor = .aTeamHeadLineTextColor
         label.font = .systemFont(ofSize: 25, weight: .bold)
         label.adjustsFontSizeToFitWidth = true
-        label.text = "ㅇㅇㅇ님의"
+        label.text = "\(NicknameStorageService.shared.getNickname() ?? "")님의"
         return label
     }()
     private let titleLable: UILabel = {
