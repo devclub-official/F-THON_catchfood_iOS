@@ -13,14 +13,14 @@ import RxCocoa
 
 class LoginViewController : UIViewController {
     
-    var containerView : UIView = {
+    private var containerView : UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .white
         return view
     }()
     
-    lazy var logoImageView : UIImageView = {
+    private lazy var logoImageView : UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "app_logo")
         imageView.contentMode = .scaleAspectFit
@@ -29,7 +29,7 @@ class LoginViewController : UIViewController {
         return imageView
     }()
     
-    var nicknameTextField : UITextField = {
+    private var nicknameTextField : UITextField = {
         let textField = UITextField()
         textField.layer.cornerRadius = 8
         textField.layer.borderWidth = 1
@@ -41,34 +41,20 @@ class LoginViewController : UIViewController {
         return textField
     }()
     
-    var confirmButton : UIButton = {
+    private var confirmButton : UIButton = {
         let button = UIButton()
         button.layer.cornerRadius = 8
         button.setTitle("확인", for: .normal)
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor.orange.withAlphaComponent(0.7)
+        button.backgroundColor = UIColor.orange.withAlphaComponent(0.5)
         button.isEnabled = false
         button.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
         return button
     }()
     
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
     
-    var viewModel : LoginViewModel!
-    
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    convenience init(_ viewModel : LoginViewModel)
-    {
-        self.init(nibName: nil, bundle: nil)
-        self.viewModel = viewModel
-    }
+    private let viewModel = LoginViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -103,22 +89,33 @@ class LoginViewController : UIViewController {
         confirmButton.snp.makeConstraints { make in
             make.left.equalTo(20)
             make.right.equalTo(-20)
-            make.bottom.equalToSuperview().offset(-10)
+            make.bottom.equalToSuperview().offset(-30)
             make.height.equalTo(56)
         }
     }
     
     func bind()
     {
+        viewModel.isLogin
+            .subscribe { isLogin in
+                if isLogin
+                {
+                    let viewController = TabBarController()
+                    (UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate)?.changeRootVC(viewController, animated: false)
+                }
+            }
+            .disposed(by: disposeBag)
+        
         confirmButton.rx.tap
             .withUnretained(self)
-            .bind { _ in
-                
+            .bind { [weak self] _ in
+                self?.viewModel.signUp()
             }
             .disposed(by: disposeBag)
         
         nicknameTextField.rx.text
             .orEmpty
+            .distinctUntilChanged()
             .map(viewModel.checkTextfieldEmpty(_:))
             .subscribe { [weak self] isEmpty in
                 self?.confirmButton.isEnabled = !isEmpty

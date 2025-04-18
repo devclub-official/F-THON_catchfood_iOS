@@ -26,7 +26,7 @@ final class TabBarController: UITabBarController, UITabBarControllerDelegate {
     }
     
     private func settupTabbar() {
-        let homeViewController = UINavigationController(rootViewController: ViewController())
+        let homeViewController = UINavigationController(rootViewController: GroupChatViewController())
         let searchViewController = UINavigationController(rootViewController: SearchViewController())
         let preferenceInputViewController = UINavigationController(rootViewController: PreferenceInputViewController())
         
