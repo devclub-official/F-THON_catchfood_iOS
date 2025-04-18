@@ -82,7 +82,7 @@ final class FoodListTableViewCell: UITableViewCell {
         self.restaurant = restaurant
         self.categoryLabel.text = restaurant.category
         self.titleLabel.text = restaurant.title
-        self.walkLabel.text = "\(restaurant.minutes)분"
+        self.walkLabel.text = restaurant.minutes == nil ? "" : "\(restaurant.minutes!)분"
         self.likeButton.isHidden = isHiddenLikeButton
         ImageLoadHelper.shared.loadImage(from: restaurant.imageStr) { [weak self] image in
             guard let self = self else { return }

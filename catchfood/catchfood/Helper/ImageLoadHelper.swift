@@ -17,7 +17,7 @@ final class ImageLoadHelper {
         // 유효한 URL인지 확인
         guard let url = URL(string: urlString) else {
             print("❌ 잘못된 URL입니다: \(urlString)")
-            completion(nil)
+            completion(UIImage(named: "DefaultImage"))
             return
         }
 
@@ -25,13 +25,13 @@ final class ImageLoadHelper {
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("❌ 이미지 다운로드 실패: \(error.localizedDescription)")
-                completion(nil)
+                completion(UIImage(named: "DefaultImage"))
                 return
             }
 
             guard let data = data, let image = UIImage(data: data) else {
                 print("❌ 이미지 데이터 변환 실패")
-                completion(nil)
+                completion(UIImage(named: "DefaultImage"))
                 return
             }
 

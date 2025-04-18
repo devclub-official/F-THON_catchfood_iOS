@@ -5,45 +5,47 @@
 //  Created by 정종찬 on 4/18/25.
 //
 
-import Foundation
 import RxSwift
-import Alamofire
 import RxCocoa
+import UIKit
+import Alamofire
 
-class LoginViewModel {
-    
-    let nameTextFieldSubject = BehaviorRelay<String>(value: "")
-    
-    let isLogin = PublishRelay<Bool>()
-    
-    func checkTextfieldEmpty(_ text : String) -> Bool
-    {
-        nameTextFieldSubject.accept(text)
-        return text.isEmpty
+final class LoginViewModel {
+    struct Input {
+        let login: Observable<String>
     }
     
-    func signUp()
-    {
-        let params : Parameters = [
-            "name" :  nameTextFieldSubject.value
-        ]
-        
-        AF.request(baseURLStr + "signup", method: .post, parameters: params, encoding: URLEncoding.httpBody).validate().responseData { response in
-            switch response.result {
-            case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let json = try? decoder.decode(LoginResultDTO.self, from: data)
-                    print("success login!")
-                    self.isLogin.accept(true)
-                } catch {
-                    print("error!\(error)")
-                    self.isLogin.accept(false)
-                }
-            case .failure(let error):
-                NSLog(error.localizedDescription)
-                self.isLogin.accept(false)
+    struct Output {
+        let loginResult: Signal<Bool>
+    }
+    
+    func transform(input: Input) -> Output {
+        let loginResult = input.login
+            .flatMapLatest { nickname -> Observable<Bool> in
+                let endpoint = APIEndpoint(
+                    path: "/signup",
+                    method: .post,
+                    parameters: ["name": nickname]
+                )
+
+                return APIService.shared.request(endpoint, type: StatusResponse.self)
+                    .map { $0.status == "SUCCESS" } // 200 OK + SUCCESS
+                    .catch { error in
+                        // 🔍 에러가 AFError 혹은 underlying HTTP 오류인 경우
+                        if let afError = error as? AFError,
+                           case let .responseValidationFailed(reason) = afError,
+                           case let .unacceptableStatusCode(code) = reason,
+                           code == 400 {
+                            return .just(true) // ✅ 400이면 true 반환
+                        }
+
+                        // 그 외는 실패
+                        return .just(false)
+                    }
             }
-        }
+            .asSignal(onErrorJustReturn: false)
+
+        return Output(loginResult: loginResult)
     }
 }
+

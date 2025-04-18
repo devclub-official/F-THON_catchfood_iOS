@@ -16,6 +16,7 @@ final class SearchViewController: UIViewController {
     private let tableView = UITableView()
     private let searchTextField = CFTextField(placeholder: "오늘은 무엇을 먹고 싶으신가요?")
     private let searchButton = SearchIconButton()
+    private let searchText = PublishSubject<String>()
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -59,7 +60,13 @@ final class SearchViewController: UIViewController {
     }
     
     private func bind() {
-        let input = SearchViewModel.Input()
+        searchButton.rx.tap
+            .subscribe { _ in
+                self.searchText.onNext(self.searchTextField.text ?? "")
+            }
+            .disposed(by: disposeBag)
+        
+        let input = SearchViewModel.Input(keywoard: searchText.asObservable())
         let output = vm.transform(input: input)
 
         output.restaurants
@@ -72,8 +79,6 @@ final class SearchViewController: UIViewController {
         
         tableView.rx.modelSelected(Restaurants.self)
             .subscribe(onNext: { [weak self] restaurant in
-                // 여기에 이동 or 출력 등 원하는 동작
-                print("클릭된 식당: \(restaurant.title)")
                 let detailVC = RestaurantDetailViewController(restaurantId: restaurant.id)
                 self?.navigationController?.pushViewController(detailVC, animated: true)
             })
