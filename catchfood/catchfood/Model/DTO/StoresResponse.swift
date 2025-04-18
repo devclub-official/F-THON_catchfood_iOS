@@ -18,11 +18,11 @@ struct StoresItem: Codable {
     let id: Int
     let storeName: String
     let category: String?
-    let representativeMenu: RepresentativeMenu?
+    let representativeMenu: Representative?
     let distanceInMinutesByWalk: Int?
 }
 
-struct RepresentativeMenu: Codable {
+struct Representative: Codable {
     let name: String
     let imageUrl: String
 }
